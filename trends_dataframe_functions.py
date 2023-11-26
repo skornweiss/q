@@ -1,6 +1,7 @@
 import pandas as pd
 import re
 from datetime import datetime
+import openpyxl
 import sys
 
 # Define a regex pattern to match the 'Lastname, Firstname' format
