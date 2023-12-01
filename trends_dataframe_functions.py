@@ -36,7 +36,7 @@ def clean_trends_df(df):
     df = df.fillna("")
 
     # Truncate decimal values inside the DataFrame to one decimal point
-    df = df.map(lambda x: '{:.2f}'.format(float(x)) if isinstance(x, (float, str)) and is_convertible_to_float(x) else x)
+    #df = df.map(lambda x: '{:.2f}'.format(float(x)) if isinstance(x, (float, str)) and is_convertible_to_float(x) else x)
         
     return df
 
