@@ -74,17 +74,16 @@ if file is not None:
             st.plotly_chart(fig)
         if cat.lower() == 'sex hormones':
             df2 = df.query('test == "PSA"').replace('',np.nan).dropna()
-            if df2.empty:
-                continue
-            print(df2)
-            df2.sort_values(by='date',inplace=True)
-            fig2 = px.line(df2, x='date', y='result', title="PSA")
-            fig2.update_xaxes(tickmode='array',tickvals=df2['date'],tickformat="%m/%d/%y")
-            # Add data labels to each point
-            for x, y in zip(df2['date'], df2['result']):
-                fig2.add_trace(go.Scatter(x=[x], y=[y], mode='markers', marker=dict(color='black', size=6), showlegend=False))
-                fig2.add_annotation(x=x, y=y, text=str(y), showarrow=False, yshift=12, xshift=5, font=dict(color="black"))
-            st.plotly_chart(fig2)
+            if not df2.empty:
+                print(df2)
+                df2.sort_values(by='date',inplace=True)
+                fig2 = px.line(df2, x='date', y='result', title="PSA")
+                fig2.update_xaxes(tickmode='array',tickvals=df2['date'],tickformat="%m/%d/%y")
+                # Add data labels to each point
+                for x, y in zip(df2['date'], df2['result']):
+                    fig2.add_trace(go.Scatter(x=[x], y=[y], mode='markers', marker=dict(color='black', size=6), showlegend=False))
+                    fig2.add_annotation(x=x, y=y, text=str(y), showarrow=False, yshift=12, xshift=5, font=dict(color="black"))
+                st.plotly_chart(fig2)
         if cat.lower() == 'sex hormones':
             df3 = df.query('test == "Free testosterone"').replace('',np.nan).dropna()
             print(df3)
