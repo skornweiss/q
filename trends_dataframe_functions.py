@@ -4,6 +4,11 @@ from datetime import datetime
 import openpyxl
 import sys
 
+import plotly.express as px
+import plotly.graph_objects as go
+import numpy as np
+
+
 # Define a regex pattern to match the 'Lastname, Firstname' format
 name_pattern = r"^(?!.*?\b(?:last\s+name\s*,\s*first\s+name|last\s*,\s*first)\b)\s*[A-Za-z\- '\.]+(, Jr\.?|, Sr\.?|, I{1,3}|, IV|, V|, VI|, VII|, VIII|, IX|, X)?\s*,\s*[A-Za-z\- '\.]+\s*$"
    
@@ -192,3 +197,17 @@ def split_by_category(df, categories):
         dataframes.append((current_category, current_df))
     print(dataframes)
     return dataframes
+
+
+def create_plotly_line_plot_of_metric(dataframe, metric_name):
+    df = dataframe
+    df = df.query(f'test.str.lower() == @metric_name').replace('',np.nan).dropna()
+    if df.empty:
+        return
+    df.sort_values(by='date',inplace=True)
+    fig = px.line(df, x='date', y='result', title=f'{metric_name}'.capitalize())
+    fig.update_xaxes(tickmode='array',tickvals=df['date'],tickformat="%m/%d/%y")
+    for x, y in zip(df['date'], df['result']):
+        fig.add_trace(go.Scatter(x=[x], y=[y], mode='markers', marker=dict(color='black', size=6), showlegend=False))
+        fig.add_annotation(x=x, y=y, text=str(y), showarrow=False, yshift=12, xshift=5, font=dict(color="black"))
+    return fig

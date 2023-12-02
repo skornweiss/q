@@ -2,10 +2,6 @@ import streamlit as st
 import pandas as pd
 from io import StringIO
 from dateutil.parser import parse
-import plotly.express as px
-import plotly.graph_objects as go
-import numpy as np
-
 
 import trends_dataframe_functions as tdf
 from datetime import date
@@ -33,65 +29,64 @@ if file is not None:
     df = tdf.clean_trends_df(df)
     df = tdf.validate_headers(df)
     df = tdf.format_date_headers(df)
-    #df = tdf.sort_columns_reverse_chronological(df)
+    
+    # Adds 'is_category' column set to True for rows that are category rows
     df = tdf.id_category_rows(df)
-    #st.table(df)
-    #st.markdown(df.to_markdown())
-    #styled_df = df.style.set_sticky(axis=1)
-    styled_df = df.style.format(precision=2,)
-    cat_rows = df.index[df['is_category'] == True].tolist()
-    styled_df = styled_df.set_properties(subset=pd.IndexSlice[cat_rows,:],**{'background-color':'black','color':'white'})
+        
+    # Example of how to style float precision for display
+    #styled_df = df.style.format(precision=2)
     #styled_df
+
+    # Identifies category rows and puts them into a list for styling
+    #cat_rows = df.index[df['is_category'] == True].tolist()
+    #styled_df = styled_df.set_properties(subset=pd.IndexSlice[cat_rows,:],**{'background-color':'black','color':'white'})
+    #styled_df
+
+    # Get  name in case we want it, but then immediately over-write if not using
+    patient_name = df.columns[0]
+    patient_name = '4;tqoiheg;iheg;43htq34d;lkj'
+    del(patient_name)
     df.rename(columns={df.columns[0]:'test'},inplace=True)
+
     df_melted = pd.melt(df,id_vars=[df.columns[0]],value_name="result",var_name="date")
     df_melted = tdf.add_category_column(df_melted,categories)
     df_melted = df_melted.query('date !="is_category"')
     df_melted["date"] = pd.to_datetime(df_melted["date"])
-    for category in categories:
-        cat = category.capitalize()
-        query = f'category == "{cat}" and test != "{cat}"'
-        df = df_melted.query(query)       
-        df.sort_values(by='date',inplace=True,ascending=False)
-        #df
-        #df = df.iloc[::-1]
+        
+    # Test names to make plots for
+    tests_to_plot = ['apob','free testosterone','psa']
+
+    # Make tables to display the dataframe for each category of test separately
+    for cat in categories:
+    
+        # Query the larger dataframe for tests that fall into a specific category
+        query = 'category.str.lower() == @cat and test.str.lower() != @cat'
+        df = df_melted.query(query)
+
+        # If the query is blank, continue the loop and skip to the next category
         if df.empty:
             continue
-        pivot = df.pivot(index='test', columns='date', values='result') #.drop(['is_category'],axis=1)
-        #pivot = pivot.reindex(columns=pivot.columns[::-1])
+        
+        # Sort the tests by date
+        df.sort_values(by='date',inplace=True,ascending=False)
+    
+        # Pivot the dataframe so that each date is a column of data and each test has a row
+        pivot = df.pivot(index='test', columns='date', values='result')
+    
+        # Convert column names, which were datetime objects, to dates of type string
         pivot.columns = pivot.columns.strftime('%m/%d/%y')
+
+        # Write the subheader and dataframe to streamlit
         st.subheader(cat.upper())
-        st.dataframe(pivot)
-        if cat.lower() == 'lipoproteins':
-            df1 = df.query('test == "ApoB"')
-            print(df1)
-            df1.sort_values(by='date',ascending=False,inplace=True)
-            fig = px.line(df1, x='date', y='result', title='ApoB')
-            fig.update_xaxes(tickmode='array',tickvals=df1['date'],tickformat="%m/%d/%y")
-            # Add data labels to each point
-            for x, y in zip(df1['date'], df1['result']):
-                fig.add_trace(go.Scatter(x=[x], y=[y], mode='markers', marker=dict(color='black', size=6), showlegend=False))
-                fig.add_annotation(x=x, y=y, text=str(y), showarrow=False, yshift=12, xshift=5, font=dict(color="black"))
-            st.plotly_chart(fig)
-        if cat.lower() == 'sex hormones':
-            df2 = df.query('test == "PSA"').replace('',np.nan).dropna()
-            if not df2.empty:
-                print(df2)
-                df2.sort_values(by='date',inplace=True)
-                fig2 = px.line(df2, x='date', y='result', title="PSA")
-                fig2.update_xaxes(tickmode='array',tickvals=df2['date'],tickformat="%m/%d/%y")
-                # Add data labels to each point
-                for x, y in zip(df2['date'], df2['result']):
-                    fig2.add_trace(go.Scatter(x=[x], y=[y], mode='markers', marker=dict(color='black', size=6), showlegend=False))
-                    fig2.add_annotation(x=x, y=y, text=str(y), showarrow=False, yshift=12, xshift=5, font=dict(color="black"))
-                st.plotly_chart(fig2)
-        if cat.lower() == 'sex hormones':
-            df3 = df.query('test == "Free testosterone"').replace('',np.nan).dropna()
-            print(df3)
-            df3.sort_values(by='date',inplace=True)
-            fig = px.line(df3, x='date', y='result', title="Free T")
-            fig.update_xaxes(tickmode='array',tickvals=df3['date'],tickformat="%m/%d/%y")
-            # Add data labels to each point
-            for x, y in zip(df3['date'], df3['result']):
-                fig.add_trace(go.Scatter(x=[x], y=[y], mode='markers', marker=dict(color='black', size=6), showlegend=False))
-                fig.add_annotation(x=x, y=y, text=str(y), showarrow=False, yshift=12, xshift=5, font=dict(color="black"))
-            st.plotly_chart(fig)
+        st.dataframe(pivot.style.format(precision=1))
+
+        # If any of the tests to plot are in this category, go ahead and plot them
+        # Find intersection of the tests we want to plot and the pivot index, which is the 'test' col
+        tests_in_cat = set(test.lower() for test in tests_to_plot) & set(test_name.lower() for test_name in pivot.index)
+        for test in tests_in_cat:
+            fig = tdf.create_plotly_line_plot_of_metric(df_melted,test)
+            if fig:
+                st.plotly_chart(fig)
+
+# Make styled HTML table
+st.markdown('<p>testing</p>',unsafe_allow_html=True)
