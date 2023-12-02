@@ -74,6 +74,8 @@ if file is not None:
             st.plotly_chart(fig)
         if cat.lower() == 'sex hormones':
             df2 = df.query('test == "PSA"').replace('',np.nan).dropna()
+            if df2.empty:
+                continue
             print(df2)
             df2.sort_values(by='date',inplace=True)
             fig2 = px.line(df2, x='date', y='result', title="PSA")
