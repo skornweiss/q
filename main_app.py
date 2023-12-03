@@ -60,7 +60,6 @@ if trends_file is not None:
     patient_name = '4;tqoiheg;iheg;43htq34d;lkj'
     del(patient_name)
     df.rename(columns={df.columns[0]:'test'},inplace=True)
-
     df_melted = pd.melt(df,id_vars=[df.columns[0]],value_name="result",var_name="date")
     df_melted = tdf.add_category_column(df_melted,categories)
     df_melted_nocat = df_melted.query('date !="is_category"')
@@ -109,7 +108,7 @@ if trends_file is not None:
 #if bp_file is not None:
 #    pass
 
-if bp_clipboard is not None:
+if bp_clipboard:
     try:
         bpdf = pd.read_clipboard(header=None) #,sep=',',quotechar=':')
         print(bpdf)
