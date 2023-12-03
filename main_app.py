@@ -110,7 +110,11 @@ if trends_file is not None:
 #    pass
 
 if bp_clipboard is not None:
-    bpdf = pd.read_clipboard(header=None) #,sep=',',quotechar=':')
-    print(bpdf)
-    fig = bpa.create_plotly_bp_fig(bpdf)
-    st.plotly_chart(fig)
+    try:
+        bpdf = pd.read_clipboard(header=None) #,sep=',',quotechar=':')
+        print(bpdf)
+        fig = bpa.create_plotly_bp_fig(bpdf)
+        st.plotly_chart(fig)
+    except:
+        pass
+    
