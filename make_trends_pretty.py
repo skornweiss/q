@@ -685,8 +685,8 @@ def main(path):
     html_content = generate_html(df)
 
     
-    save_to_files(df, "output.md", "output.html")
-    save_html_to_file(df, "output2.html")
+    #save_to_files(df, "output.md", "output.html")
+    #save_html_to_file(df, "output2.html")
     return(html_content)
 
    
