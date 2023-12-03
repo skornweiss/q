@@ -109,6 +109,7 @@ if trends_file is not None:
 #    pass
 
 if bp_clipboard:
+    print('fucking trying this thing')
     st.echo('pressed clipboard button')
     try:
         bpdf = pd.read_clipboard(header=None) #,sep=',',quotechar=':')
