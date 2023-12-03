@@ -11,12 +11,11 @@ def read_and_clean_excel(file_path):
     df = pd.read_excel(file_path, parse_dates=True, header=None, index_col=None)
     
     # Find the header row (containing 'Ref range')
-    ref_index = df[df.applymap(lambda x: x == 'Ref range')].any(axis=1).idxmax()
+    ref_index = df[df.map(lambda x: x == 'Ref range')].any(axis=1).idxmax()
     
     # Set the columns based on the identified header row
     df.columns = df.iloc[ref_index]
 
-    df = df.rename(columns={"Ref range":"Reference"})
     
     # Drop rows above and including the identified header row
     df = df[ref_index + 1:]
@@ -122,7 +121,7 @@ def apply_formatting(df):
     df.columns = formatted_columns
     
     # Truncate decimal values inside the DataFrame to one decimal point
-    df = df.applymap(lambda x: '{:.1f}'.format(float(x)) if isinstance(x, (float, str)) and is_convertible_to_float(x) else x)
+    df = df.map(lambda x: '{:.1f}'.format(float(x)) if isinstance(x, (float, str)) and is_convertible_to_float(x) else x)
     
     # Identify category rows
     def is_blank_or_alpha(val):
@@ -279,7 +278,7 @@ def save_to_files(df, md_file, html_file):
         file.write(modified_html_content)
 
 def generate_html(df):
-    
+    print
     # Start the HTML with the base structure and styles
     html = """
     <html>
@@ -688,7 +687,7 @@ def main(path):
     
     save_to_files(df, "output.md", "output.html")
     save_html_to_file(df, "output2.html")
-    return html_content
+
    
 
 #if __name__ == '__main__':
@@ -697,3 +696,5 @@ def main(path):
 
 
 #weasyprint.HTML('output2.html').write_pdf('output2.pdf')
+
+
