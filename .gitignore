@@ -1,0 +1,6 @@
+output.html
+output2.html
+streamlit_trends_sample.xlsx
+*.xlsx
+*.xls*
+*.html
