@@ -16,6 +16,7 @@ def read_and_clean_excel(file_path):
     # Set the columns based on the identified header row
     df.columns = df.iloc[ref_index]
 
+    df = df.rename(columns={"Ref range":"Reference"})
     
     # Drop rows above and including the identified header row
     df = df[ref_index + 1:]
@@ -687,7 +688,7 @@ def main(path):
     
     save_to_files(df, "output.md", "output.html")
     save_html_to_file(df, "output2.html")
-
+    return html_content
    
 
 #if __name__ == '__main__':
@@ -696,5 +697,3 @@ def main(path):
 
 
 #weasyprint.HTML('output2.html').write_pdf('output2.pdf')
-
-
