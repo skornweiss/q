@@ -12,8 +12,8 @@ import blood_pressure_analytics as bpa
 st.echo(categories)
 
 # App Title
-st.title("ERPA")
-st.write('Extremely Robust and Perfect Analytics')
+st.title("EMERPA")
+st.write('Early Medical Extremely Robust and Perfect Analytics')
 st.divider()
 
 # Dash
@@ -40,6 +40,10 @@ if trends_file is not None:
     
     # Adds 'is_category' column set to True for rows that are category rows
     df = tdf.id_category_rows(df)
+
+    # Convert all numeric columns to float
+    for col in df.columns:
+        df[col] = pd.to_numeric(df[col], errors='ignore')
         
     # Example of how to style float precision for display
     #styled_df = df.style.format(precision=2)
@@ -105,18 +109,20 @@ if trends_file is not None:
                 
                 # Find the row with the most recent date
                 most_recent_row = psa_df.loc[psa_df['date'].idxmax()]
-                print(most_recent_row)
+                
                 # Select the 'result' from the most recent row
                 most_recent_psa = most_recent_row['result']
                 most_recent_psa_date = most_recent_row['date'].strftime("%m.%d.%y")
-                print(psa_df)
+                
 
                 #most_recent_psa = df_melted[df_melted['test'].str.lower() == "psa"].sort_values('date', ascending=False).iloc[1]['result']
                 #most_recent_psa_date = df_melted[df_melted['test'].str.lower() == "psa"].sort_values('date', ascending=False).iloc[1]['date']
-                print('fuck',most_recent_psa)
+                
                 psa_density = float(float(most_recent_psa) / psa_vol)
                 st.write(f"Most recent PSA: {most_recent_psa} ({most_recent_psa_date})")
                 st.write(f"PSA Density: {psa_density:.2}")
+                st.sidebar.write(f"Most recent PSA: {most_recent_psa} ({most_recent_psa_date})")
+                st.sidebar.write(f"PSA Density: {psa_density:.2}")
         st.divider()
 
     # Display pretty trends within the app
@@ -126,10 +132,10 @@ if trends_file is not None:
 #    pass
 
 if st.sidebar.button('BPs from clip'):
-    try:
-        bpdf = pd.read_clipboard(header=None) #,sep=',',quotechar=':')
-        fig = bpa.create_plotly_bp_fig(bpdf)
-        st.plotly_chart(fig)
-    except:
-        pass
+    #try:
+    bpdf = pd.read_clipboard(header=None) #,sep=',',quotechar=':')
+    fig = bpa.create_plotly_bp_fig(bpdf)
+    st.plotly_chart(fig)
+    #except:
+    #    raise
     

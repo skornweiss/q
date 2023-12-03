@@ -81,7 +81,7 @@ def create_plotly_bp_fig(df):
         # Calculate midpoints and heights
         df['mid'] = (df['systolic'] + df['diastolic']) / 2
         df['height'] = df['systolic'] - df['diastolic']
-
+        bar_width = 0.5
         # Create a Bar chart
         fig = go.Figure()
         fig.add_trace(go.Bar(
@@ -89,15 +89,61 @@ def create_plotly_bp_fig(df):
             y=df['systolic'] - df['diastolic'],
             base=df['diastolic'],
             name='Blood Pressure Range',
-            orientation='v'
+            orientation='v',
+            width=bar_width,
+            showlegend=False,
+            marker=dict(
+            color='#2e5090',  # This acts as a mask
+            opacity=0.5  # Almost fully transparent
+            )))
+
+        # Calculate the average systolic and diastolic values
+        avg_systolic = df['systolic'].mean()
+        std_systolic = df['systolic'].std()
+        avg_diastolic = df['diastolic'].mean()
+        std_diastolic = df['diastolic'].std()
+
+
+        # Add line trace for average systolic value
+        fig.add_trace(go.Scatter(
+            #x=df['Date'],
+            y=[avg_systolic] * len(df),
+            mode='lines',
+            line=dict(color='#F36A65', width=2, dash='dash'),
+            name=f'Avg Systolic: {avg_systolic:.0f} +/- {std_systolic:.0f}'
         ))
+
+        # Add line trace for average diastolic value
+        fig.add_trace(go.Scatter(
+            #x=df['Date'],
+            y=[avg_diastolic] * len(df),
+            mode='lines',
+            line=dict(color='#3E8BFF', width=2, dash='dash'),
+            name=f'Avg Diastolic: {avg_diastolic:.0f} +/- {std_diastolic:.0f}'
+        ))
+
+        # Update layout
+        fig.update_layout(
+            title="Blood Pressure Readings with Averages",
+            #xaxis_title="Date",
+            yaxis_title="Blood Pressure (mmHg)"
+        )
+       
 
         # Update layout
         fig.update_layout(
             title="Blood Pressure Readings",
             xaxis_title=x_title,
-            yaxis_title="Blood Pressure (mmHg)"
-        )
+            yaxis_title="Blood Pressure (mmHg)",
+            legend=dict(
+            font=dict(
+                size=18,  # Set the font size here
+                family="Avenir"                
+            ),
+            x=0.5,
+            y=1.2,
+            bgcolor='rgba(0,0,0,0)'
+        ))
         return fig
     # Show the plot
     #fig.show()
