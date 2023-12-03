@@ -37,7 +37,6 @@ def clean_bp(s):
 
 
 def filter_bp_data(df):
-    print('to filter',df)
     # Create a mask for blood pressure data
     df = df.map(lambda x: clean_bp(x))
     bp_mask = df.map(lambda x: is_bp_format(str(x)))
@@ -49,7 +48,7 @@ def filter_bp_data(df):
 
 def create_plotly_bp_fig(df):
     df = filter_bp_data(df)
-    print('filtered',df)
+    
     # Find the time and blood pressure columns
     time_column = None
     bp_column = None
@@ -61,7 +60,6 @@ def create_plotly_bp_fig(df):
         # Check for blood pressure data
         elif any(is_bp_format(str(x)) for x in df[col]):
             bp_column = col
-            print('bpcol',bp_column)
 
         if time_column and bp_column:
             break
@@ -75,11 +73,8 @@ def create_plotly_bp_fig(df):
         x_axis = df.index
         x_title = "Index"
     
-    print('FUCK2',df)
-    print('bpcol',bp_column)
     # Split the blood pressure data into systolic and diastolic
     if bp_column is not None:
-        print('its working')
         df[['systolic', 'diastolic']] = df[bp_column].str.split('/', expand=True).astype(float)
     
 

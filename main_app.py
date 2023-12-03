@@ -5,7 +5,7 @@ from dateutil.parser import parse
 
 import trends_dataframe_functions as tdf
 from datetime import date
-from trends_constants import *
+from trends_constants import categories, tests_to_plot
 import make_trends_pretty as mtp
 import blood_pressure_analytics as bpa
 
@@ -23,6 +23,7 @@ st.divider()
 # Add file-uploader to sidebar
 trends_file = st.sidebar.file_uploader('Upload Trends File', help="Select an excel lab trends sheet")
 #bp_file = st.sidebar.file_uploader('Upload BP File')
+psa_vol = st.sidebar.number_input('PSA Volume')
 
 a = pd.DataFrame()
 #a.style.format(precision=2,hidd)
@@ -60,11 +61,10 @@ if trends_file is not None:
     df_melted = pd.melt(df,id_vars=[df.columns[0]],value_name="result",var_name="date")
     df_melted = tdf.add_category_column(df_melted,categories)
     df_melted_nocat = df_melted.query('date !="is_category"')
-    df_melted_nocat["date"] = pd.to_datetime(df_melted_nocat["date"])
+    df_melted_nocat = df_melted_nocat.copy()
+    #df_melted_nocat["date"] = pd.to_datetime(df_melted_nocat["date"], format='%m/%d/%Y', errors='coerce')
+    df_melted_nocat["date"] = pd.to_datetime(df_melted_nocat["date"],errors='ignore')
         
-    # Test names to make plots for
-    tests_to_plot = ['apob','free testosterone','psa','ast','alt','hb','triglycerides','insulin','hba1c']
-
     # Make tables to display the dataframe for each category of test separately
     for cat in categories:
     
@@ -77,7 +77,7 @@ if trends_file is not None:
             continue
         
         # Sort the tests by date
-        df.sort_values(by='date',inplace=True,ascending=False)
+        df = df.sort_values(by='date', ascending=False)
     
         # Pivot the dataframe so that each date is a column of data and each test has a row
         pivot = df.pivot(index='test', columns='date', values='result')
@@ -97,6 +97,26 @@ if trends_file is not None:
             fig = tdf.create_plotly_line_plot_of_metric(df_melted_nocat,test)
             if fig:
                 st.plotly_chart(fig)
+            if test == 'psa' and psa_vol:
+                #print(df_melted[df_melted['test'].str.lower() == "psa"])
+                psa_df = df_melted_nocat.query('test.str.lower() == "psa"')
+                psa_df = psa_df[psa_df['result'] != '']
+                psa_df['date'] = pd.to_datetime(psa_df['date'])
+                
+                # Find the row with the most recent date
+                most_recent_row = psa_df.loc[psa_df['date'].idxmax()]
+                print(most_recent_row)
+                # Select the 'result' from the most recent row
+                most_recent_psa = most_recent_row['result']
+                most_recent_psa_date = most_recent_row['date'].strftime("%m.%d.%y")
+                print(psa_df)
+
+                #most_recent_psa = df_melted[df_melted['test'].str.lower() == "psa"].sort_values('date', ascending=False).iloc[1]['result']
+                #most_recent_psa_date = df_melted[df_melted['test'].str.lower() == "psa"].sort_values('date', ascending=False).iloc[1]['date']
+                print('fuck',most_recent_psa)
+                psa_density = float(float(most_recent_psa) / psa_vol)
+                st.write(f"Most recent PSA: {most_recent_psa} ({most_recent_psa_date})")
+                st.write(f"PSA Density: {psa_density:.2}")
         st.divider()
 
     # Display pretty trends within the app
@@ -106,11 +126,8 @@ if trends_file is not None:
 #    pass
 
 if st.sidebar.button('BPs from clip'):
-    print('fucking trying this thing')
-    st.echo('pressed clipboard button')
     try:
         bpdf = pd.read_clipboard(header=None) #,sep=',',quotechar=':')
-        print(bpdf)
         fig = bpa.create_plotly_bp_fig(bpdf)
         st.plotly_chart(fig)
     except:
