@@ -23,12 +23,9 @@ st.divider()
 # Add file-uploader to sidebar
 trends_file = st.sidebar.file_uploader('Upload Trends File', help="Select an excel lab trends sheet")
 #bp_file = st.sidebar.file_uploader('Upload BP File')
-bp_clipboard = st.sidebar.button('Visualize BPs from Clipboard')
-
 
 a = pd.DataFrame()
 #a.style.format(precision=2,hidd)
-
 
 if trends_file is not None:
 
@@ -108,7 +105,7 @@ if trends_file is not None:
 #if bp_file is not None:
 #    pass
 
-if bp_clipboard:
+if st.sidebar.button('BPs from clip'):
     print('fucking trying this thing')
     st.echo('pressed clipboard button')
     try:
