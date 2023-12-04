@@ -6,3 +6,4 @@ streamlit_trends_sample.xlsx
 *.html
 bps.md
 *.pyc
+__pycache__/
