@@ -16,6 +16,7 @@ def read_and_clean_excel(file_path):
     # Set the columns based on the identified header row
     df.columns = df.iloc[ref_index]
 
+    df = df.rename(columns={"Ref range":"Reference"})    
     
     # Drop rows above and including the identified header row
     df = df[ref_index + 1:]
