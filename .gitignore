@@ -5,3 +5,4 @@ streamlit_trends_sample.xlsx
 *.xls*
 *.html
 bps.md
+*.pyc
