@@ -8,13 +8,14 @@ from datetime import date
 from trends_constants import categories, tests_to_plot
 import make_trends_pretty as mtp
 import blood_pressure_analytics as bpa
+import cgm_plot as cgm
 
 st.echo(categories)
 
 # App Title
-st.title("EMERPA")
-st.write('Early Medical Extremely Robust and Perfect Analytics')
-st.divider()
+#st.title("EMERPA")
+#st.write('Early Medical Extremely Robust and Perfect Analytics')
+#st.divider()
 
 # Dash
 #st.metric("Date", date.ctime(date.today()))
@@ -138,4 +139,10 @@ if st.sidebar.button('BPs from clip'):
     st.plotly_chart(fig)
     #except:
     #    raise
+
+
+cgm_csv = st.sidebar.file_uploader('Upload CGM CSV')
+if cgm_csv is not None:
+    plot = cgm.create_cgm_plot(cgm_csv)
+    st.pyplot(plot)
     

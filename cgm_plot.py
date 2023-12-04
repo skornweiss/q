@@ -5,7 +5,7 @@ import numpy as np
 from datetime import datetime
 from scipy.integrate import trapz, simps
 from scipy.signal import savgol_filter
-import seaborn as sns
+#import seaborn as sns
 import os
 
 mpl.rcParams['font.family'] = 'Avenir'
@@ -14,14 +14,15 @@ mpl.rcParams['font.family'] = 'Avenir'
 def time_to_minutes(t):
     return t.hour * 60 + t.minute
 
-def read_cgm_csv(filepath):
-    # Ingest the CSV into a pandas DataFrame
-    csv_file = ""
-    csv_file_basename = os.path.basename(csv_file)
-    global csv_file_dirname = os.path.dirname(csv_file)
+# Ingest the CSV into a pandas DataFrame
+#csv_file = """
+#csv_file_basename = os.path.basename(csv_file)
+#csv_file_dirname = os.path.dirname(csv_file)
 
-    ptname = os.path.basename(csv_file).split('%')[0].split('_')[2:4]
-    ptname = ','.join(ptname)
+#ptname = os.path.basename(csv_file).split('%')[0].split('_')[2:4]
+#ptname = ','.join(ptname)
+
+def create_cgm_plot(csv_file):
     df = pd.read_csv(csv_file, parse_dates=[1])
 
     # Extract the datetime and glucose columns
@@ -51,9 +52,8 @@ def read_cgm_csv(filepath):
         return group[(group['Glucose'] >= lower_bound) & (group['Glucose'] <= upper_bound)]
 
     df = df.groupby('Minutes').apply(remove_outliers).reset_index(drop=True)
-    return df
 
-def calc_smoothed_quantiles(df):
+
     # Calculate the quantiles for each minute after outlier removal and interpolation
     grouped = df.groupby('Minutes').Glucose
     quantiles = grouped.quantile([0.10, 0.34, 0.50, 0.68, 0.90]).unstack()
@@ -85,27 +85,25 @@ def calc_smoothed_quantiles(df):
 
     for col in smoothed_quantiles.columns:
         smoothed_quantiles[col] = savgol_filter(quantiles[col], window_size, poly_order)
-    return smoothed_quantiles
 
-# Define color gradients based on the hex colors you provided
-night_color = np.array([0, 32, 128]) / 255.
-daytime_color = np.array([255, 223, 186]) / 255.   # A yellow daylight color
-sunrise_middle = np.array([38, 125, 255]) / 255.   # #267DFF
-sunset_middle = np.array([218, 89, 85]) / 255.    # #DA5955
+    # Define color gradients based on the hex colors you provided
+    night_color = np.array([0, 32, 128]) / 255.
+    daytime_color = np.array([255, 223, 186]) / 255.   # A yellow daylight color
+    sunrise_middle = np.array([38, 125, 255]) / 255.   # #267DFF
+    sunset_middle = np.array([218, 89, 85]) / 255.    # #DA5955
 
-def interpolate_colors(colors, num):
-    """Generate interpolated color values."""
-    r_diff = colors[1, 0] - colors[0, 0]
-    g_diff = colors[1, 1] - colors[0, 1]
-    b_diff = colors[1, 2] - colors[0, 2]
+    def interpolate_colors(colors, num):
+        """Generate interpolated color values."""
+        r_diff = colors[1, 0] - colors[0, 0]
+        g_diff = colors[1, 1] - colors[0, 1]
+        b_diff = colors[1, 2] - colors[0, 2]
 
-    r = np.linspace(colors[0, 0], colors[0, 0] + r_diff, num)
-    g = np.linspace(colors[0, 1], colors[0, 1] + g_diff, num)
-    b = np.linspace(colors[0, 2], colors[0, 2] + b_diff, num)
+        r = np.linspace(colors[0, 0], colors[0, 0] + r_diff, num)
+        g = np.linspace(colors[0, 1], colors[0, 1] + g_diff, num)
+        b = np.linspace(colors[0, 2], colors[0, 2] + b_diff, num)
 
-    return list(zip(r, g, b))
+        return list(zip(r, g, b))
 
-def plot_and_save(df):
     plt.figure(figsize=(15, 8))
     ax = plt.gca()
 
@@ -195,19 +193,15 @@ def plot_and_save(df):
     plt.legend(loc='upper left', bbox_to_anchor=(0, 1))
 
     plt.tight_layout()
-    title=f"{ptname} | {date_range} | CGM Readings | Smoothed over {window_size} minute windows using Savitzky-Golay Smoothing"
+    title=f"{date_range} | CGM Readings | Smoothed over {window_size} minute windows using Savitzky-Golay Smoothing"
     plt.title(title, weight='bold')
 
     plt.subplots_adjust(top=0.90)  # Adjust the top spacing to 90% of the figure height
 
 
     dates = date_range.replace(' ','_').replace('/','.')
-    outfile = f"{csv_file_dirname}/{ptname}_cgm_plot_{dates}.png"
-    plt.savefig(outfile, dpi=300)
+    #outfile = f"{csv_file_dirname}/{ptname}_cgm_plot_{dates}.png"
+    #plt.savefig(outfile, dpi=300)
 
-    plt.show()
-
-def make_plot_from_cgm_csv(path):
-    df = read_cgm_csv(path)
-    df = calc_smoothed_quantiles(df)
-    plot_and_save(df)
+    #plt.show()
+    return plt
