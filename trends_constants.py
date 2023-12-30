@@ -8,4 +8,4 @@ medication_categories = {
 }
 
 # Test names to make plots for
-tests_to_plot = ['apob','free testosterone','psa','ast','alt','hb','triglycerides','insulin','hba1c','uric acid','tsh','ft3','lh','fsh','testosterone']
+tests_to_plot = ['hscrp','ferritin','apob','free testosterone','psa','ast','alt','hb','triglycerides','insulin','hba1c','uric acid','tsh','ft3','lh','fsh','testosterone','hdl-c','vldl-c','desmosterol','fT3']

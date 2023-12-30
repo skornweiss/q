@@ -201,6 +201,7 @@ def split_by_category(df, categories):
 
 def create_plotly_line_plot_of_metric(dataframe, metric_name):
     df = dataframe
+    print(df.columns,metric_name)
     df = df.query(f'test.str.lower() == @metric_name').replace('',np.nan).dropna()
     if df.empty:
         return

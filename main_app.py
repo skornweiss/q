@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 from io import StringIO
 from dateutil.parser import parse
+import re
+import pyperclip
+import statistics
 
 import trends_dataframe_functions as tdf
 from datetime import date
@@ -9,6 +12,52 @@ from trends_constants import categories, tests_to_plot
 import make_trends_pretty as mtp
 import blood_pressure_analytics as bpa
 import cgm_plot as cgm
+
+# streamlit_app.py
+
+import hmac
+import streamlit as st
+
+
+def check_password():
+    """Returns `True` if the user had a correct password."""
+
+    def login_form():
+        """Form with widgets to collect user information"""
+        with st.form("Credentials"):
+            st.text_input("Username", key="username")
+            st.text_input("Password", type="password", key="password")
+            st.form_submit_button("Log in", on_click=password_entered)
+
+    def password_entered():
+        """Checks whether a password entered by the user is correct."""
+        if st.session_state["username"] in st.secrets[
+            "passwords"
+        ] and hmac.compare_digest(
+            st.session_state["password"],
+            st.secrets.passwords[st.session_state["username"]],
+        ):
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # Don't store the username or password.
+            del st.session_state["username"]
+        else:
+            st.session_state["password_correct"] = False
+
+    # Return True if the username + password is validated.
+    if st.session_state.get("password_correct", False):
+        return True
+
+    # Show inputs for username + password.
+    login_form()
+    if "password_correct" in st.session_state:
+        st.error("😕 User not known or password incorrect")
+    return False
+
+
+if not check_password():
+    st.stop()
+
+# Begin App
 
 st.echo(categories)
 
@@ -133,12 +182,42 @@ if trends_file is not None:
 #    pass
 
 if st.sidebar.button('BPs from clip'):
-    #try:
-    bpdf = pd.read_clipboard(header=None) #,sep=',',quotechar=':')
-    fig = bpa.create_plotly_bp_fig(bpdf)
-    st.plotly_chart(fig)
-    #except:
-    #    raise
+    try:
+        clipboard = pyperclip.paste()
+        
+        bp_pattern = r'\b\d{2,3}/\d{2,3}\b'
+        # Find all matching patterns in the text
+        matches = re.findall(bp_pattern, clipboard)
+        
+        # Convert the matched readings to integers for processing
+        readings = [tuple(map(int, match.split('/'))) for match in matches]
+
+        # Calculate the mean of systolic and diastolic pressures separately
+        systolic_values = [reading[0] for reading in readings]
+        diastolic_values = [reading[1] for reading in readings]
+
+        # Calculate the mean values for systolic and diastolic pressures
+        mean_systolic = statistics.mean(systolic_values)
+        mean_diastolic = statistics.mean(diastolic_values)
+
+        # Calculate the threshold for outliers
+        threshold_systolic = mean_systolic * 0.5
+        threshold_diastolic = mean_diastolic * 0.5
+
+        # Filter out outliers
+        filtered_readings = [match for match in matches if all(
+            abs(int(val) - mean) <= threshold
+            for val, mean, threshold in zip(match.split('/'), [mean_systolic, mean_diastolic], [threshold_systolic, threshold_diastolic])
+        )]
+        bpdf = pd.DataFrame(filtered_readings)
+        #bpdf = pd.read_clipboard() #header=None) #,sep=',',quotechar=':')
+        #bpdf
+        bpdf.columns = ['BPs']
+        st.markdown(bpdf.to_markdown())
+        fig = bpa.create_plotly_bp_fig(bpdf)
+        st.plotly_chart(fig)
+    except:
+        raise
 
 
 cgm_csv = st.sidebar.file_uploader('Upload CGM CSV')
@@ -146,3 +225,5 @@ if cgm_csv is not None:
     plot = cgm.create_cgm_plot(cgm_csv)
     st.pyplot(plot)
     
+
+st.sidebar.file_uploader('upload new file')

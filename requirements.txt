@@ -5,3 +5,6 @@ openpyxl
 plotly
 matplotlib
 scipy
+pyperclip
+re
+statistics
