@@ -181,9 +181,17 @@ if trends_file is not None:
 #if bp_file is not None:
 #    pass
 
-if st.sidebar.button('BPs from clip'):
+
+cgm_csv = st.sidebar.file_uploader('Upload CGM CSV')
+if cgm_csv is not None:
+    plot = cgm.create_cgm_plot(cgm_csv)
+    st.pyplot(plot)
+
+
+if st.sidebar.button('Analyze BPs on Clipboard'):
     try:
         clipboard = pyperclip.paste()
+
         
         bp_pattern = r'\b\d{2,3}/\d{2,3}\b'
         # Find all matching patterns in the text
@@ -218,12 +226,6 @@ if st.sidebar.button('BPs from clip'):
         st.plotly_chart(fig)
     except:
         raise
-
-
-cgm_csv = st.sidebar.file_uploader('Upload CGM CSV')
-if cgm_csv is not None:
-    plot = cgm.create_cgm_plot(cgm_csv)
-    st.pyplot(plot)
     
 
 st.sidebar.file_uploader('upload new file')
