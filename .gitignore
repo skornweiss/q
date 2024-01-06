@@ -7,4 +7,4 @@ streamlit_trends_sample.xlsx
 bps.md
 *.pyc
 __pycache__/
-./.streamlit/secrets.toml
+.streamlit/secrets.toml
